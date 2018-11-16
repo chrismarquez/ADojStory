@@ -9,7 +9,7 @@ class ParagraphParser(
 ): IParagraphParser {
 
     private var className = ""
-    private var pendingMethdos = arrayListOf<String>()
+    private var pendingMethods = arrayListOf<String>()
 
     private val value = "(\"\\w\"|[0-9]+(.[0-9]+)?)"
     private val fields = mutableListOf<String>()
@@ -24,6 +24,7 @@ class ParagraphParser(
         "It can (\\w+(, )*)*".toRegex().containsMatchIn(sentence) -> declareMethods(sentence)
         "There is a \\w".toRegex().containsMatchIn(sentence) -> createObject(sentence)
         "It has \\w of $value".toRegex().matches(sentence) -> addField(sentence)
+        "To (\\w*)(,+) (.(?!,\$))+".toRegex().containsMatchIn(sentence) -> defineMethod(sentence)
         else -> throw IllegalArgumentException("No match found")
     }
 
@@ -34,9 +35,11 @@ class ParagraphParser(
         this.className = className
     }
 
-    private fun declareMethods(sentence: String) {
-        val splitted = sentence.split(" ")
-        for (i in 2..splitted.size) this.pendingMethdos.add(splitted[i].replace(",", ""))
+    private fun declareMethods(sentence: String): ArrayList<String> {
+        val splitted = sentence.split(" ", ", ")
+        for (i in 2..(splitted.size - 1)) this.pendingMethods.add(splitted[i])
+        // Returning pending methods for unit testing
+        return this.pendingMethods
     }
 
     private fun addField(sentence: String): String {
@@ -49,4 +52,14 @@ class ParagraphParser(
         codeGen.genField(key, value)
         return "$key,$value"
     }
+
+    private fun defineMethod(sentence: String): List<String> {
+        val splitted = sentence.split(", ", ",")
+        val statements: List<String> = splitted[1].split("; ", ";")
+        // TODO: Add Statements to Match Pattern function to run this loop
+        // for (statement in statements) matchPattern(statement)
+        // Returning statements for unit testing
+        return statements
+    }
+
 }
