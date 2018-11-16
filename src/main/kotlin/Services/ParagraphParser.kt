@@ -11,7 +11,7 @@ class ParagraphParser(
     private var className = ""
     private var pendingMethods = arrayListOf<String>()
 
-    private val value = "(\"\\w\"|[0-9]+(.[0-9]+)?)"
+    private val value = "(\"\\w*\"|[0-9]+(.[0-9]+)?)"
     private val fields = mutableListOf<String>()
 
     override fun parseParagraph(paragraph: String): String {
@@ -21,11 +21,13 @@ class ParagraphParser(
     }
 
     private fun matchPattern(sentence: String) = when {
-        "There is a \\w".toRegex().containsMatchIn(sentence) -> createObject(sentence)
-        "It has \\w of $value".toRegex().matches(sentence) -> addField(sentence)
-        "its \\w be $value".toRegex().matches(sentence) -> modifyField(sentence)
+        "There is a \\w*".toRegex().containsMatchIn(sentence) -> createObject(sentence)
+        "It has \\w* of $value".toRegex().containsMatchIn(sentence) -> addField(sentence)
+        "its \\w* be $value".toRegex().containsMatchIn(sentence) -> modifyField(sentence)
         "It can (\\w+(, )*)*".toRegex().containsMatchIn(sentence) -> declareMethods(sentence)
         "To (\\w*)(,+) (.(?!,\$))+".toRegex().containsMatchIn(sentence) -> defineMethod(sentence)
+        "let \\w* be $value".toRegex().containsMatchIn(sentence) -> declareLocalVariable(sentence)
+        "\\w* be $value".toRegex().containsMatchIn(sentence) -> modifyLocalVariable(sentence)
         else -> throw IllegalArgumentException("No match found")
     }
 
@@ -60,17 +62,47 @@ class ParagraphParser(
         val key = splitted[1]
         val value = splitted[3]
         if (fields.find { it == key } == null) fields.add(key)
-        codeGen.genField(key, value)
+
+        // Handler should be in the codeGen?
+        // codeGen.genField(key, value)
         return "$key,$value"
     }
 
     private fun defineMethod(sentence: String): List<String> {
         val splitted = sentence.split(", ", ",")
+        val methodName = splitted[0].split(" ")[0]
         val statements: List<String> = splitted[1].split("; ", ";")
+        if (this.pendingMethods.find { it == methodName } != null) this.pendingMethods.remove(methodName)
+
         // TODO: Add Statements to Match Pattern function to run this loop
-        // for (statement in statements) matchPattern(statement)
+        // TODO: Send correct call to Code Gen
+        // codeGen.genMethod()
+        for (statement in statements) matchPattern(statement)
         // Returning statements for unit testing
         return statements
     }
 
+    private fun declareLocalVariable(sentence: String): String {
+        val splitted = sentence.split(" ")
+        if (splitted.size != 4) throw IllegalArgumentException("Declare local variable malformed: $sentence")
+        val key = splitted[1]
+        val value = splitted[3]
+
+        // TODO: Send correct call to Code Gen
+        // codeGen.genStatement()
+        // Returning local variable key-value pairs for unit testing
+        return "$key,$value"
+    }
+
+    private fun modifyLocalVariable(sentence: String): String {
+        val splitted = sentence.split(" ")
+        if (splitted.size != 3) throw IllegalArgumentException("Modify local variable malformed: $sentence")
+        val key = splitted[0]
+        val value = splitted[2]
+
+        // TODO: Send correct call to Code Gen
+        // codeGen.genStatement()
+        // Returning local variable key-value pairs for unit testing
+        return "$key,$value"
+    }
 }

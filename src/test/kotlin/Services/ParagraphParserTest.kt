@@ -48,14 +48,14 @@ internal class ParagraphParserTest {
     @Test
     fun modifyField() {
         val test1 = "its age be 8"
-        val test2 = "its name be Bob"
+        val test2 = "its name be \"Bob\""
         val modifiyFieldMethod = ParagraphParser::class.members.find { it.name == "modifyField" }
         modifiyFieldMethod?.let {
             it.isAccessible = true
             val field1 = it.call(parser, test1) as String
             val field2 = it.call(parser, test2) as String
             Assert.assertEquals("age,8", field1)
-            Assert.assertEquals("name,Bob", field2)
+            Assert.assertEquals("name,\"Bob\"", field2)
         }
     }
 
@@ -68,25 +68,50 @@ internal class ParagraphParserTest {
             val field1 = it.call(parser, test1) as List<*>
             val array1: List<String> = listOf("run","sleep","bark")
             Assert.assertEquals(array1, field1)
-            // println(field1)
         }
     }
 
     @Test
     fun defineMethod(){
-        val test1 = "To bark, its mood is Angry;its volume is loud; it uses run with 5"
-        val test2 = "To sleep,its mood is Calm"
+        val test1 = "To bark, its age be 8;let volume be \"Loud\""
+        val test2 = "To sleep,bedtime be \"Now\""
         val defineMethodCallable = ParagraphParser::class.members.find { it.name == "defineMethod" }
         defineMethodCallable?.let {
             it.isAccessible = true
             val field1 = it.call(parser, test1) as List<*>
             val field2 = it.call(parser, test2) as List<*>
-            val array1: List<String> = listOf("its mood is Angry","its volume is loud","it uses run with 5")
-            val array2: List<String> = listOf("its mood is Calm")
+            val array1: List<String> = listOf("its age be 8","let volume be \"Loud\"")
+            val array2: List<String> = listOf("bedtime be \"Now\"")
             Assert.assertEquals(array1, field1)
             Assert.assertEquals(array2, field2)
-            // println(field1)
-            // println(field2)
+        }
+    }
+
+    @Test
+    fun declareLocalVariable(){
+        val test1 = "let day be \"Today\""
+        val test2 = "let count be 7"
+        val declareLocalVariableMethod = ParagraphParser::class.members.find { it.name == "declareLocalVariable" }
+        declareLocalVariableMethod?.let {
+            it.isAccessible = true
+            val field1 = it.call(parser, test1) as String
+            val field2 = it.call(parser, test2) as String
+            Assert.assertEquals("day,\"Today\"", field1)
+            Assert.assertEquals("count,7", field2)
+        }
+    }
+
+    @Test
+    fun modifyLocalVariable(){
+        val test1 = "day be \"Yesterday\""
+        val test2 = "count be 10"
+        val declareLocalVariableMethod = ParagraphParser::class.members.find { it.name == "modifyLocalVariable" }
+        declareLocalVariableMethod?.let {
+            it.isAccessible = true
+            val field1 = it.call(parser, test1) as String
+            val field2 = it.call(parser, test2) as String
+            Assert.assertEquals("day,\"Yesterday\"", field1)
+            Assert.assertEquals("count,10", field2)
         }
     }
 }
