@@ -8,19 +8,17 @@ class ParagraphParser(
 ): IParagraphParser {
 
     private var className = ""
-    private var sentences = listOf<String>()
 
     override fun parseParagraph(paragraph: String): String {
-        sentences = paragraph.split("\\.")
+        val sentences = paragraph.split("\\.")
         for (sentence in sentences) matchPattern(sentence)
         return codeGen.buildObject(className)
     }
 
 
     fun matchPattern(sentence: String) {
-        val regex = sentence.toRegex()
         when {
-            regex.containsMatchIn("There") -> createObject(sentence)
+            "There".toRegex().containsMatchIn(sentence) -> createObject(sentence)
             else -> ""
         }
     }
