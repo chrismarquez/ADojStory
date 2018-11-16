@@ -21,9 +21,10 @@ class ParagraphParser(
     }
 
     private fun matchPattern(sentence: String) = when {
-        "It can (\\w+(, )*)*".toRegex().containsMatchIn(sentence) -> declareMethods(sentence)
         "There is a \\w".toRegex().containsMatchIn(sentence) -> createObject(sentence)
         "It has \\w of $value".toRegex().matches(sentence) -> addField(sentence)
+        "its \\w be $value".toRegex().matches(sentence) -> modifyField(sentence)
+        "It can (\\w+(, )*)*".toRegex().containsMatchIn(sentence) -> declareMethods(sentence)
         "To (\\w*)(,+) (.(?!,\$))+".toRegex().containsMatchIn(sentence) -> defineMethod(sentence)
         else -> throw IllegalArgumentException("No match found")
     }
@@ -35,7 +36,7 @@ class ParagraphParser(
         this.className = className
     }
 
-    private fun declareMethods(sentence: String): ArrayList<String> {
+    private fun declareMethods(sentence: String): List<String> {
         val splitted = sentence.split(" ", ", ")
         for (i in 2..(splitted.size - 1)) this.pendingMethods.add(splitted[i])
         // Returning pending methods for unit testing
@@ -49,6 +50,16 @@ class ParagraphParser(
         val value = splitted[4]
         if (fields.find { it == key } != null) throw IllegalStateException("Duplicate field: $key")
         fields.add(key)
+        codeGen.genField(key, value)
+        return "$key,$value"
+    }
+
+    private fun modifyField(sentence: String): String{
+        val splitted = sentence.split(" ")
+        if (splitted.size != 4) throw IllegalArgumentException("Modify field malformed: $sentence")
+        val key = splitted[1]
+        val value = splitted[3]
+        if (fields.find { it == key } == null) fields.add(key)
         codeGen.genField(key, value)
         return "$key,$value"
     }

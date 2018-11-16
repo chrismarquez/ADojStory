@@ -46,13 +46,27 @@ internal class ParagraphParserTest {
     }
 
     @Test
+    fun modifyField() {
+        val test1 = "its age be 8"
+        val test2 = "its name be Bob"
+        val modifiyFieldMethod = ParagraphParser::class.members.find { it.name == "modifyField" }
+        modifiyFieldMethod?.let {
+            it.isAccessible = true
+            val field1 = it.call(parser, test1) as String
+            val field2 = it.call(parser, test2) as String
+            Assert.assertEquals("age,8", field1)
+            Assert.assertEquals("name,Bob", field2)
+        }
+    }
+
+    @Test
     fun declareMethods(){
         val test1 = "It can run, sleep, bark"
         val declareMethodsCallable = ParagraphParser::class.members.find { it.name == "declareMethods" }
         declareMethodsCallable?.let {
             it.isAccessible = true
-            val field1 = it.call(parser, test1) as ArrayList<*>
-            val array1: ArrayList<String> = arrayListOf("run","sleep","bark")
+            val field1 = it.call(parser, test1) as List<*>
+            val array1: List<String> = listOf("run","sleep","bark")
             Assert.assertEquals(array1, field1)
             // println(field1)
         }
