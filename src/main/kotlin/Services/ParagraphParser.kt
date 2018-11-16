@@ -16,11 +16,9 @@ class ParagraphParser(
     }
 
 
-    fun matchPattern(sentence: String) {
-        when {
-            "There".toRegex().containsMatchIn(sentence) -> createObject(sentence)
-            else -> ""
-        }
+    private fun matchPattern(sentence: String) = when {
+        "There is a [a-zA-Z ]+".toRegex().containsMatchIn(sentence) -> createObject(sentence)
+        else -> throw IllegalArgumentException("No match found")
     }
 
     private fun createObject(sentence: String) {
