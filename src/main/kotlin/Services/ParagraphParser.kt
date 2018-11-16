@@ -9,6 +9,7 @@ class ParagraphParser(
 ): IParagraphParser {
 
     private var className = ""
+    private var pendingMethdos = arrayListOf<String>()
 
     private val value = "(\"\\w\"|[0-9]+(.[0-9]+)?)"
     private val fields = mutableListOf<String>()
@@ -20,6 +21,7 @@ class ParagraphParser(
     }
 
     private fun matchPattern(sentence: String) = when {
+        "It can (\\w+(, )*)*".toRegex().containsMatchIn(sentence) -> declareMethods(sentence)
         "There is a \\w".toRegex().containsMatchIn(sentence) -> createObject(sentence)
         "It has \\w of $value".toRegex().matches(sentence) -> addField(sentence)
         else -> throw IllegalArgumentException("No match found")
@@ -27,10 +29,14 @@ class ParagraphParser(
 
     private fun createObject(sentence: String) {
         val splitted = sentence.split(" ")
-        if (splitted.size < 4) throw IllegalArgumentException("Create expression malformed: $sentence")
         var className = ""
         for (i in 3..splitted.size) className += splitted[i]
         this.className = className
+    }
+
+    private fun declareMethods(sentence: String) {
+        val splitted = sentence.split(" ")
+        for (i in 2..splitted.size) this.pendingMethdos.add(splitted[i].replace(",", ""))
     }
 
     private fun addField(sentence: String): String {
@@ -43,5 +49,4 @@ class ParagraphParser(
         codeGen.genField(key, value)
         return "$key,$value"
     }
-
 }
