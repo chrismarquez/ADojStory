@@ -8,6 +8,7 @@ class ParagraphParser(
 ): IParagraphParser {
 
     private var className = ""
+    private var pendingMethdos = arrayListOf<String>()
 
     override fun parseParagraph(paragraph: String): String {
         val sentences = paragraph.split("\\.")
@@ -18,15 +19,19 @@ class ParagraphParser(
 
     private fun matchPattern(sentence: String) = when {
         "There is a [a-zA-Z ]+".toRegex().containsMatchIn(sentence) -> createObject(sentence)
+        "It can (\\w+(, )*)*".toRegex().containsMatchIn(sentence) -> declareMethods(sentence)
         else -> throw IllegalArgumentException("No match found")
     }
 
     private fun createObject(sentence: String) {
         val splitted = sentence.split(" ")
-        if (splitted.size < 4) throw IllegalArgumentException("Create expression malformed: $sentence")
         var className = ""
         for (i in 3..splitted.size) className += splitted[i]
         this.className = className
     }
 
+    private fun declareMethods(sentence: String) {
+        val splitted = sentence.split(" ")
+        for (i in 2..splitted.size) this.pendingMethdos.add(splitted[i].replace(",", ""))
+    }
 }
