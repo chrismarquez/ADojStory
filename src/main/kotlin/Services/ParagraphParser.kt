@@ -2,38 +2,35 @@ package Services
 
 import Interfaces.ICodeGenerator
 import Interfaces.IParagraphParser
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.runBlocking
-import java.lang.Exception
 
 class ParagraphParser(
     private val codeGen: ICodeGenerator
 ): IParagraphParser {
 
+    private var className = ""
     private var sentences = listOf<String>()
-    private val deferred = mutableListOf<Deferred<String>>()
 
     override fun parseParagraph(paragraph: String): String {
         sentences = paragraph.split("\\.")
-        val code = runBlocking { spawnGenerators() }
-        return code
+        for (sentence in sentences) matchPattern(sentence)
+        return codeGen.buildObject(className)
     }
 
-    suspend fun spawnGenerators(): String = coroutineScope {
-        for (sentence in sentences) {
-            val result = async { matchPattern(sentence) }
-            deferred.add(result)
+
+    fun matchPattern(sentence: String) {
+        val regex = sentence.toRegex()
+        when {
+            regex.containsMatchIn("There") -> createObject(sentence)
+            else -> ""
         }
-        val values = deferred.map { it.await() }
-        values.joinToString("\n")
     }
 
-    fun matchPattern(sentence: String): String = when(sentence) {
-        "" -> ""
-        else -> throw Exception("Pattern not found")
+    private fun createObject(sentence: String) {
+        val splitted = sentence.split(" ")
+        if (splitted.size < 4) throw IllegalArgumentException("Create expression malformed: $sentence")
+        var className = ""
+        for (i in 3..splitted.size) className += splitted[i]
+        this.className = className
     }
-
 
 }
