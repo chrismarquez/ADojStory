@@ -11,7 +11,8 @@ class ParagraphParser(
     private var className = ""
     private var pendingMethods = arrayListOf<String>()
 
-    private val value = "(\"\\w*\"|[0-9]+(.[0-9]+)?)"
+    private val value = "(\"\\w+\"|[0-9]+(.[0-9]+)?)"
+    private val comma = "(, )*"
     private val fields = mutableListOf<String>()
 
     override fun parseParagraph(paragraph: String): String {
@@ -21,13 +22,14 @@ class ParagraphParser(
     }
 
     private fun matchPattern(sentence: String) = when {
-        "There is a \\w*".toRegex().containsMatchIn(sentence) -> createObject(sentence)
-        "It has \\w* of $value".toRegex().containsMatchIn(sentence) -> addField(sentence)
-        "its \\w* be $value".toRegex().containsMatchIn(sentence) -> modifyField(sentence)
-        "It can (\\w+(, )*)*".toRegex().containsMatchIn(sentence) -> declareMethods(sentence)
-        "To (\\w*)(,+) (.(?!,\$))+".toRegex().containsMatchIn(sentence) -> defineMethod(sentence)
-        "let \\w* be $value".toRegex().containsMatchIn(sentence) -> declareLocalVariable(sentence)
-        "\\w* be $value".toRegex().containsMatchIn(sentence) -> modifyLocalVariable(sentence)
+        "There is a \\w+".toRegex().containsMatchIn(sentence) -> createObject(sentence)
+        "It has \\w+ of $value".toRegex().matches(sentence) -> addField(sentence)
+        "its \\w+ be $value".toRegex().matches(sentence) -> modifyField(sentence)
+        "It can (\\w+$comma)+".toRegex().containsMatchIn(sentence) -> declareMethods(sentence)
+        "To (\\w+)(,+) (.(?!,\$))+".toRegex().containsMatchIn(sentence) -> defineMethod(sentence)
+        "let \\w+ be $value".toRegex().matches(sentence) -> declareLocalVariable(sentence)
+        "\\w+ be $value".toRegex().matches(sentence) -> modifyLocalVariable(sentence)
+        "it uses \\w+( with ($value+$comma)+)?".toRegex().matches(sentence) -> callMethod(sentence)
         else -> throw IllegalArgumentException("No match found")
     }
 
@@ -104,5 +106,21 @@ class ParagraphParser(
         // codeGen.genStatement()
         // Returning local variable key-value pairs for unit testing
         return "$key,$value"
+    }
+
+    private fun callMethod(sentence: String): String {
+        val splitted = sentence.split(" ", ", ", ",")
+        val method = splitted[2]
+        var args = mutableListOf<String>()
+
+        // println(splitted.size)
+        if (splitted.size != 3) {
+            for (i in 4..(splitted.size - 1)) args.add(splitted[i])
+        }
+
+        // TODO: Send correct call to Code Gen
+        // codeGen.genStatement()
+        // Returning local variable key-value pairs for unit testing
+        return "$method($args)"
     }
 }

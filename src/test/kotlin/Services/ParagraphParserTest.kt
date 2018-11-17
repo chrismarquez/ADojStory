@@ -60,7 +60,7 @@ internal class ParagraphParserTest {
     }
 
     @Test
-    fun declareMethods(){
+    fun declareMethods() {
         val test1 = "It can run, sleep, bark"
         val declareMethodsCallable = ParagraphParser::class.members.find { it.name == "declareMethods" }
         declareMethodsCallable?.let {
@@ -72,7 +72,7 @@ internal class ParagraphParserTest {
     }
 
     @Test
-    fun defineMethod(){
+    fun defineMethod() {
         val test1 = "To bark, its age be 8;let volume be \"Loud\""
         val test2 = "To sleep,bedtime be \"Now\""
         val defineMethodCallable = ParagraphParser::class.members.find { it.name == "defineMethod" }
@@ -88,7 +88,7 @@ internal class ParagraphParserTest {
     }
 
     @Test
-    fun declareLocalVariable(){
+    fun declareLocalVariable() {
         val test1 = "let day be \"Today\""
         val test2 = "let count be 7"
         val declareLocalVariableMethod = ParagraphParser::class.members.find { it.name == "declareLocalVariable" }
@@ -102,16 +102,30 @@ internal class ParagraphParserTest {
     }
 
     @Test
-    fun modifyLocalVariable(){
+    fun modifyLocalVariable() {
         val test1 = "day be \"Yesterday\""
         val test2 = "count be 10"
-        val declareLocalVariableMethod = ParagraphParser::class.members.find { it.name == "modifyLocalVariable" }
-        declareLocalVariableMethod?.let {
+        val modifyLocalVariableMethod = ParagraphParser::class.members.find { it.name == "modifyLocalVariable" }
+        modifyLocalVariableMethod?.let {
             it.isAccessible = true
             val field1 = it.call(parser, test1) as String
             val field2 = it.call(parser, test2) as String
             Assert.assertEquals("day,\"Yesterday\"", field1)
             Assert.assertEquals("count,10", field2)
+        }
+    }
+
+    @Test
+    fun callMethod() {
+        val test1 = "it uses sleep"
+        val test2 = "it uses bark with 5, \"Loud\",3.12"
+        val callMethodCallable = ParagraphParser::class.members.find { it.name == "callMethod" }
+        callMethodCallable?.let {
+            it.isAccessible = true
+            val field1 = it.call(parser, test1) as String
+            val field2 = it.call(parser, test2) as String
+            Assert.assertEquals("sleep([])", field1)
+            Assert.assertEquals("bark([5, \"Loud\", 3.12])", field2)
         }
     }
 }
