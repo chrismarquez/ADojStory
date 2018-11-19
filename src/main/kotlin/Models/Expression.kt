@@ -1,3 +1,9 @@
 package Models
 
-class Expression
+import com.sun.tools.javac.code.Attribute
+
+data class Expression(
+        val type: Type
+) {
+    // TODO
+}
