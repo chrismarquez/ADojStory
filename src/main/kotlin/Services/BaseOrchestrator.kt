@@ -7,8 +7,6 @@ import java.io.FileReader
 
 class BaseOrchestrator (private val paragraphParser : IParagraphParser) : IOrchestrator {
 
-    private val delimiter: Char = '\t'
-
 
     override fun parse(inputFile: File): ArrayList<String> {
         val paragraphs : ArrayList<String> = parseParagraphs(parseFile(inputFile))
@@ -20,18 +18,22 @@ class BaseOrchestrator (private val paragraphParser : IParagraphParser) : IOrche
     }
 
     fun parseParagraphs(textBody: String): ArrayList<String> {
-        var result: ArrayList<String> = arrayListOf<String>()
+        val result: ArrayList<String> = arrayListOf<String>()
         if(textBody.isEmpty()) {
             println("Nothing to parse!")
             return result
         }
         var paragraph: String = ""
-        for(i in textBody) {
-            if(i == delimiter && paragraph.isNotEmpty()) {
-                result.add(paragraph)
-                paragraph = ""
+        for(i in textBody.indices) {
+            val value = textBody[i]
+            if(value == '\n' && paragraph.isNotEmpty()) {
+                if(textBody[i+1] == '\n' && paragraph.isNotEmpty()) {
+                    result.add(paragraph)
+                    paragraph = ""
+                }
             } else {
-                paragraph += i
+                if(value == '\n') continue
+                paragraph += value
             }
         }
         result.add(paragraph)
