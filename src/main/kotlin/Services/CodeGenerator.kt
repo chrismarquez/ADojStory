@@ -3,10 +3,11 @@ package Services
 import Interfaces.ICodeGenerator
 import Models.Expression
 
-class CodeGenerator : ICodeGenerator {
+abstract class CodeGenerator : ICodeGenerator {
 
     private var fields: MutableList<String> = mutableListOf<String>()
     private var variables: MutableList<String> = mutableListOf<String>()
+    private var methods: MutableList<String> = mutableListOf<String>()
 
 
     override fun genField(key: String, value: String): ICodeGenerator {
@@ -21,6 +22,11 @@ class CodeGenerator : ICodeGenerator {
     }
 
     override fun genMethod(name: String, args: List<String>): ICodeGenerator {
+        var the_args = ""
+        for (arg in args) {
+            the_args += "$arg, "
+        }
+        this.methods.add("$name : ($the_args) => {};");
         return this
     }
 
