@@ -1,4 +1,7 @@
 .gradle
+gradle
+out
+ADojStory.iml
 /build/
 
 # Ignore Gradle GUI config
