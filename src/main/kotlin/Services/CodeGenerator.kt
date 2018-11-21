@@ -1,8 +1,8 @@
 package Services
 
 import Interfaces.ICodeGenerator
-import Models.Expression
-import Models.Type
+import Models.*
+import kotlin.math.exp
 
 abstract class CodeGenerator : ICodeGenerator {
 
@@ -21,15 +21,46 @@ abstract class CodeGenerator : ICodeGenerator {
 
     override fun genStatement(expression: Expression, varName: String?): ICodeGenerator {
         when (expression.type) {
-            Type.ASSIGN_LOCAL -> this.statements.add("")
-            Type.CREATE_VAR -> this.statements.add("")
-            Type.ASSIGN_GLOBAL -> this.statements.add("")
-            Type.USE_METHOD -> this.statements.add("")
-            Type.USE_METHOD_PARAMS -> this.statements.add("")
-            Type.ASSIGN_ARR -> this.statements.add("")
-            Type.ASSIGN_ARR_NUM -> this.statements.add("")
-            Type.INCREASE_VAR_BY_VAL -> this.statements.add("")
-            Type.DECREASE_VAR_BY_VAL -> this.statements.add("")
+            Type.ASSIGN_LOCAL -> {
+                if (expression.data !is Assignment) throw Exception("Not correct data type")
+                this.statements.add("${expression.data.name} = ${expression.data.value};")
+            }
+            Type.CREATE_VAR -> {
+                if (expression.data !is Assignment) throw Exception("Not correct data type")
+                this.statements.add("let ${expression.data.name};")
+            }
+            Type.ASSIGN_GLOBAL -> {
+                if (expression.data !is Assignment) throw Exception("Not correct data type")
+                this.statements.add("this.${expression.data.name} = ${expression.data.value};")
+            }
+            Type.USE_METHOD -> {
+                if (expression.data !is MethodCall) throw Exception("Not correct data type")
+                this.statements.add("${expression.data.name}();")
+            }
+            Type.USE_METHOD_PARAMS -> {
+                if (expression.data !is MethodCall) throw Exception("Not correct data type")
+                var the_args = ""
+                for (arg in expression.data.args) {
+                    the_args += "$arg, "
+                }
+                this.statements.add("${expression.data.name}($the_args);")
+            }
+            Type.ASSIGN_ARR -> {
+                if (expression.data !is ArrayAssignment) throw Exception("Not correct data type")
+                this.statements.add("${expression.data.name} = ${expression.data.value};")
+            }
+            Type.ASSIGN_ARR_NUM -> {
+                if (expression.data !is ArrayAssignment) throw Exception("Not correct data type")
+                this.statements.add("${expression.data.name}[${expression.data.index}] = ${expression.data.value};")
+            }
+            Type.INCREASE_VAR_BY_VAL -> {
+                if (expression.data !is Mutation) throw Exception("Not correct data type")
+                this.statements.add("${expression.data.name} += ${expression.data.value};")
+            }
+            Type.DECREASE_VAR_BY_VAL -> {
+                if (expression.data !is Mutation) throw Exception("Not correct data type")
+                this.statements.add("${expression.data.name} -= ${expression.data.value};")
+            }
         }
         return this
     }
@@ -45,7 +76,7 @@ abstract class CodeGenerator : ICodeGenerator {
             the_statements += "\t $statement \n"
         }
 
-        this.methods.add("$name : ($the_args) => { \t $the_statements \n };")
+        this.methods.add("$name : ($the_args) => {\n $the_statements \n};")
         this.variables.add(name)
         this.statements.clear()
         return this
