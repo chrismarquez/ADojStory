@@ -9,7 +9,6 @@ abstract class CodeGenerator : ICodeGenerator {
     private var variables: MutableList<String> = mutableListOf<String>()
     private var methods: MutableList<String> = mutableListOf<String>()
 
-
     override fun genField(key: String, value: String): ICodeGenerator {
         var newfield = "$key : $value,"
         this.fields.add(newfield)
@@ -26,7 +25,8 @@ abstract class CodeGenerator : ICodeGenerator {
         for (arg in args) {
             the_args += "$arg, "
         }
-        this.methods.add("$name : ($the_args) => {};");
+        this.methods.add("$name : ($the_args) => {};")
+        this.variables.add(name)
         return this
     }
 
