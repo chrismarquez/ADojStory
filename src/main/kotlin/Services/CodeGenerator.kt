@@ -76,13 +76,30 @@ abstract class CodeGenerator : ICodeGenerator {
             the_statements += "\t $statement \n"
         }
 
-        this.methods.add("$name : ($the_args) => {\n $the_statements \n};")
+        this.methods.add("$name : ($the_args) => {\n $the_statements \n},")
         this.variables.add(name)
         this.statements.clear()
         return this
     }
 
     override fun buildObject(name: String): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+
+        // Stringify fields
+        var the_fields = ""
+        for (field in this.fields) {
+            the_fields += "\t $field \n"
+        }
+        this.fields.clear()
+
+        // Stringify Methods
+        var the_methods = ""
+        for (method in this.methods) {
+            the_methods += "\t $method \n"
+        }
+        this.methods.clear()
+
+        var objectString = "$name = { \n $the_fields \n $the_methods}"
+
+        return  objectString
     }
 }
