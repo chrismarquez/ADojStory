@@ -1,12 +1,13 @@
 package Services
 
+import Infrastructure.Inject
 import Interfaces.ICodeGenerator
 import Interfaces.IParagraphParser
 import java.lang.IllegalStateException
 
-class ParagraphParser(
-    private val codeGen: ICodeGenerator
-): IParagraphParser {
+class ParagraphParser : IParagraphParser {
+
+    private val codeGen: ICodeGenerator by Inject.get()
 
     private var className = ""
     private var pendingMethods = arrayListOf<String>()
