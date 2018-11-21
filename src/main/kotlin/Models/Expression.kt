@@ -1,3 +1,7 @@
 package Models
 
-class Expression
+data class Expression(
+        val type: Type
+) {
+    // TODO
+}
