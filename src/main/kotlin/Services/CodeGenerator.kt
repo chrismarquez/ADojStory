@@ -6,11 +6,11 @@ import kotlin.math.exp
 
 abstract class CodeGenerator : ICodeGenerator {
 
-    private var fields: MutableList<String> = mutableListOf<String>()
-    private var variables: MutableList<String> = mutableListOf<String>()
-    private var methods: MutableList<String> = mutableListOf<String>()
+    private var fields: MutableList<String> = mutableListOf()
+    private var variables: MutableList<String> = mutableListOf()
+    private var methods: MutableList<String> = mutableListOf()
 
-    private var statements: MutableList<String> = mutableListOf<String>()
+    private var statements: MutableList<String> = mutableListOf()
 
     override fun genField(key: String, value: String): ICodeGenerator {
         var newfield = "$key : $value,"
@@ -73,10 +73,10 @@ abstract class CodeGenerator : ICodeGenerator {
 
         var the_statements = ""
         for (statement in  this.statements){
-            the_statements += "\t $statement \n"
+            the_statements += " $statement "
         }
 
-        this.methods.add("$name : ($the_args) => {\n $the_statements \n},")
+        this.methods.add("$name : ($the_args) => { $the_statements },")
         this.variables.add(name)
         this.statements.clear()
         return this
@@ -87,18 +87,18 @@ abstract class CodeGenerator : ICodeGenerator {
         // Stringify fields
         var the_fields = ""
         for (field in this.fields) {
-            the_fields += "\t $field \n"
+            the_fields += " $field "
         }
         this.fields.clear()
 
         // Stringify Methods
         var the_methods = ""
         for (method in this.methods) {
-            the_methods += "\t $method \n"
+            the_methods += " $method "
         }
         this.methods.clear()
 
-        var objectString = "$name = { \n $the_fields \n $the_methods}"
+        var objectString = "let $name = { $the_fields $the_methods}"
 
         return  objectString
     }
