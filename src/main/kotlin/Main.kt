@@ -1,19 +1,15 @@
+
 import Infrastructure.Inject
-import Interfaces.ICodeGenerator
 import Interfaces.IOrchestrator
-import Interfaces.IParagraphParser
-import Services.BaseOrchestrator
-import Services.ParagraphParser
 import java.io.File
 
 
 fun main() {
-    val codeGenerator : ICodeGenerator by Inject.get()
-    val paragraphParser : IParagraphParser by Inject.get()
-    val orchestrator : IOrchestrator = BaseOrchestrator(paragraphParser)
+
+    val orchestrator: IOrchestrator by Inject.get()
 
 
-    val fileToRead: File = File("ExampleDog.dog")
+    val fileToRead = File("ExampleDog.dog")
 
     val dataParsed: ArrayList<String> = orchestrator.parse(fileToRead)
     println("--- Example data parsed ---")

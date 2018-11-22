@@ -88,16 +88,16 @@ class CodeGenerator : ICodeGenerator {
         for (field in this.fields) {
             stringFields += " $field "
         }
-        this.fields.clear()
+        //this.fields.clear()
 
         // Stringify Methods
         var stringMethods = ""
         for (method in this.methods) {
             stringMethods += " $method "
         }
-        this.methods.clear()
+        //this.methods.clear()
 
-        val objectString = "let $name = { $stringFields $stringMethods}"
+        val objectString = "let $name = { $stringFields $stringMethods};"
 
         return objectString
     }
