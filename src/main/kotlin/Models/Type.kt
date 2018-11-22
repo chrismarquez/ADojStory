@@ -1,0 +1,13 @@
+package Models
+
+enum class Type {
+    ASSIGN_LOCAL,
+    CREATE_VAR,
+    ASSIGN_GLOBAL,
+    USE_METHOD,
+    USE_METHOD_PARAMS,
+    ASSIGN_ARR,
+    ASSIGN_ARR_NUM,
+    INCREASE_VAR_BY_VAL,
+    DECREASE_VAR_BY_VAL
+}
