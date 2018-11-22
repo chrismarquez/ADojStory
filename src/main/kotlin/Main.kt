@@ -1,21 +1,15 @@
-import Interfaces.ICodeGenerator
+
+import Infrastructure.Inject
 import Interfaces.IOrchestrator
-import Interfaces.IParagraphParser
-import Services.BaseOrchestrator
-import Services.CodeGen
-import Services.ParagraphParseExample
-import Services.ParagraphParser
-import com.apple.eio.FileManager
 import java.io.File
 
 
 fun main() {
-    val codeGenerator : ICodeGenerator = CodeGen()
-    val paragraphParser : IParagraphParser = ParagraphParseExample()
-    val orchestrator : IOrchestrator = BaseOrchestrator(paragraphParser)
+
+    val orchestrator: IOrchestrator by Inject.get()
 
 
-    val fileToRead: File = File("ExampleDog.dog")
+    val fileToRead = File("ExampleDog.dog")
 
     val dataParsed: ArrayList<String> = orchestrator.parse(fileToRead)
     println("--- Example data parsed ---")

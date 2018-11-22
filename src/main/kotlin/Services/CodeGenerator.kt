@@ -2,9 +2,8 @@ package Services
 
 import Interfaces.ICodeGenerator
 import Models.*
-import kotlin.math.exp
 
-abstract class CodeGenerator : ICodeGenerator {
+class CodeGenerator : ICodeGenerator {
 
     private var fields: MutableList<String> = mutableListOf()
     private var variables: MutableList<String> = mutableListOf()
@@ -13,7 +12,7 @@ abstract class CodeGenerator : ICodeGenerator {
     private var statements: MutableList<String> = mutableListOf()
 
     override fun genField(key: String, value: String): ICodeGenerator {
-        var newfield = "$key : $value,"
+        val newfield = "$key : $value,"
         this.fields.add(newfield)
         this.variables.add(key)
         return this
@@ -66,17 +65,17 @@ abstract class CodeGenerator : ICodeGenerator {
     }
 
     override fun genMethod(name: String, args: List<String>): ICodeGenerator {
-        var the_args = ""
+        var stringArgs = ""
         for (arg in args) {
-            the_args += "$arg, "
+            stringArgs += "$arg, "
         }
 
-        var the_statements = ""
+        var statements = ""
         for (statement in  this.statements){
-            the_statements += " $statement "
+            statements += " $statement "
         }
 
-        this.methods.add("$name : ($the_args) => { $the_statements },")
+        this.methods.add("$name : ($stringArgs) => { $statements },")
         this.variables.add(name)
         this.statements.clear()
         return this
@@ -85,21 +84,21 @@ abstract class CodeGenerator : ICodeGenerator {
     override fun buildObject(name: String): String {
 
         // Stringify fields
-        var the_fields = ""
+        var stringFields = ""
         for (field in this.fields) {
-            the_fields += " $field "
+            stringFields += " $field "
         }
-        this.fields.clear()
+        //this.fields.clear()
 
         // Stringify Methods
-        var the_methods = ""
+        var stringMethods = ""
         for (method in this.methods) {
-            the_methods += " $method "
+            stringMethods += " $method "
         }
-        this.methods.clear()
+        //this.methods.clear()
 
-        var objectString = "let $name = { $the_fields $the_methods}"
+        val objectString = "let $name = { $stringFields $stringMethods};"
 
-        return  objectString
+        return objectString
     }
 }

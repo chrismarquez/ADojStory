@@ -1,12 +1,14 @@
 package Services
+import Infrastructure.Inject
 import Interfaces.IOrchestrator
 import Interfaces.IParagraphParser
 import java.io.File
 import java.io.FileReader
 
 
-class BaseOrchestrator (private val paragraphParser : IParagraphParser) : IOrchestrator {
+class BaseOrchestrator : IOrchestrator {
 
+    private val paragraphParser: IParagraphParser by Inject.get()
 
     override fun parse(inputFile: File): ArrayList<String> {
         val paragraphs : ArrayList<String> = parseParagraphs(parseFile(inputFile))
@@ -17,7 +19,7 @@ class BaseOrchestrator (private val paragraphParser : IParagraphParser) : IOrche
         return paragraphsResult
     }
 
-    fun parseParagraphs(textBody: String): ArrayList<String> {
+    private fun parseParagraphs(textBody: String): ArrayList<String> {
         val result: ArrayList<String> = arrayListOf<String>()
         if(textBody.isEmpty()) {
             println("Nothing to parse!")
@@ -40,7 +42,7 @@ class BaseOrchestrator (private val paragraphParser : IParagraphParser) : IOrche
         return result
     }
 
-    fun parseFile(file: File): String {
+    private fun parseFile(file: File): String {
         var result: String = ""
         FileReader(file).use {
             var character = it.read()

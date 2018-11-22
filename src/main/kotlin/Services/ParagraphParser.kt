@@ -17,12 +17,14 @@ class ParagraphParser : IParagraphParser {
     private val fields = mutableListOf<String>()
 
     override fun parseParagraph(paragraph: String): String {
-        val sentences = paragraph.split("\\.")
+        val sentences = paragraph.split(".")
         for (sentence in sentences) matchPattern(sentence.trim())
-        return codeGen.buildObject(className)
+        val uglyGen = codeGen.buildObject(className)
+        return Beautifier.beautify(uglyGen)
     }
 
-    private fun matchPattern(sentence: String) = when {
+    private fun matchPattern(sentence: String): Any = when {
+        sentence.isEmpty() -> ""
         "There is a \\w+".toRegex().containsMatchIn(sentence) -> createObject(sentence)
         "It has \\w+ of $value".toRegex().matches(sentence) -> addField(sentence)
         "its \\w+ be $value".toRegex().matches(sentence) -> modifyField(sentence)
@@ -31,13 +33,13 @@ class ParagraphParser : IParagraphParser {
         "let \\w+ be $value".toRegex().matches(sentence) -> declareLocalVariable(sentence)
         "\\w+ be $value".toRegex().matches(sentence) -> modifyLocalVariable(sentence)
         "it uses \\w+( with ($value+$comma)+)?".toRegex().matches(sentence) -> callMethod(sentence)
-        else -> throw IllegalArgumentException("No match found")
+        else -> throw IllegalArgumentException("No match found: $sentence")
     }
 
     private fun createObject(sentence: String) {
         val splitted = sentence.split(" ")
         var className = ""
-        for (i in 3..splitted.size) className += splitted[i]
+        for (i in 3 until splitted.size) className += splitted[i]
         this.className = className
     }
 
