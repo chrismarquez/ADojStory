@@ -20,6 +20,10 @@ class CodeGenerator : ICodeGenerator {
 
     override fun genStatement(expression: Expression, varName: String?): ICodeGenerator {
         when (expression.type) {
+            Type.PRINT -> {
+                if (expression.data !is Definition) throw Exception("Not correct data type")
+                this.statements.add("console.log(${expression.data.name});")
+            }
             Type.ASSIGN_LOCAL -> {
                 if (expression.data !is Assignment) throw Exception("Not correct data type")
                 this.statements.add("${expression.data.name} = ${expression.data.value};")

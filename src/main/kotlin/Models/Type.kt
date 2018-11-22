@@ -1,6 +1,7 @@
 package Models
 
 enum class Type {
+    PRINT,
     ASSIGN_LOCAL,
     CREATE_VAR,
     ASSIGN_GLOBAL,

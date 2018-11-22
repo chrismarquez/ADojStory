@@ -3,6 +3,7 @@ package Services
 import Infrastructure.Inject
 import Interfaces.ICodeGenerator
 import Interfaces.IParagraphParser
+import Models.*
 import java.lang.IllegalStateException
 
 class ParagraphParser : IParagraphParser {
@@ -33,6 +34,7 @@ class ParagraphParser : IParagraphParser {
         "let \\w+ be $value".toRegex().matches(sentence) -> declareLocalVariable(sentence)
         "\\w+ be $value".toRegex().matches(sentence) -> modifyLocalVariable(sentence)
         "it uses \\w+( with ($value+$comma)+)?".toRegex().matches(sentence) -> callMethod(sentence)
+        "it prints (\"\\w+\")".toRegex().matches(sentence) -> printExpression(sentence)
         else -> throw IllegalArgumentException("No match found: $sentence")
     }
 
@@ -41,6 +43,16 @@ class ParagraphParser : IParagraphParser {
         var className = ""
         for (i in 3 until splitted.size) className += splitted[i]
         this.className = className
+    }
+
+    private fun printExpression(sentence: String) {
+        val splitted = sentence.split(" ", ", ")
+        val printable = splitted[2]
+        codeGen.genStatement(
+            Expression(
+            type = Type.PRINT,
+            data = Definition(printable)
+        ))
     }
 
     private fun declareMethods(sentence: String): List<String> {
@@ -69,20 +81,24 @@ class ParagraphParser : IParagraphParser {
         if (fields.find { it == key } == null) fields.add(key)
 
         // Handler should be in the codeGen?
-        // codeGen.genField(key, value)
+        codeGen.genStatement(
+            Expression(
+            type = Type.ASSIGN_GLOBAL,
+            data = Assignment(key, value)
+        ))
         return "$key,$value"
     }
 
     private fun defineMethod(sentence: String): List<String> {
         val splitted = sentence.split(", ", ",")
-        val methodName = splitted[0].split(" ")[0]
+        val methodName = splitted[0].split(" ")[1]
         val statements: List<String> = splitted[1].split("; ", ";")
         if (this.pendingMethods.find { it == methodName } != null) this.pendingMethods.remove(methodName)
 
         // TODO: Add Statements to Match Pattern function to run this loop
-        // TODO: Send correct call to Code Gen
-        // codeGen.genMethod()
         for (statement in statements) matchPattern(statement)
+
+        codeGen.genMethod(methodName, listOf())
         // Returning statements for unit testing
         return statements
     }
@@ -93,8 +109,12 @@ class ParagraphParser : IParagraphParser {
         val key = splitted[1]
         val value = splitted[3]
 
-        // TODO: Send correct call to Code Gen
-        // codeGen.genStatement()
+        codeGen.genStatement(
+            Expression(
+            type = Type.ASSIGN_LOCAL,
+            data = Assignment(key, value)
+        ))
+
         // Returning local variable key-value pairs for unit testing
         return "$key,$value"
     }
@@ -105,8 +125,10 @@ class ParagraphParser : IParagraphParser {
         val key = splitted[0]
         val value = splitted[2]
 
-        // TODO: Send correct call to Code Gen
-        // codeGen.genStatement()
+        codeGen.genStatement(Expression(
+            type = Type.ASSIGN_LOCAL,
+            data = Assignment(key, value)
+        ))
         // Returning local variable key-value pairs for unit testing
         return "$key,$value"
     }
@@ -122,7 +144,11 @@ class ParagraphParser : IParagraphParser {
         }
 
         // TODO: Send correct call to Code Gen
-        // codeGen.genStatement()
+        codeGen.genStatement(
+            Expression(
+            type =  if (args.size == 0) Type.USE_METHOD else Type.USE_METHOD_PARAMS,
+            data = MethodCall(method, args)
+        ))
         // Returning local variable key-value pairs for unit testing
         return "$method($args)"
     }
