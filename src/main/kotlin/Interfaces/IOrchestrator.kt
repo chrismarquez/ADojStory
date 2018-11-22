@@ -4,6 +4,6 @@ import java.io.File
 
 interface IOrchestrator {
 
-    fun parse(inputFile: File): File
+    fun parse(inputFile: File): ArrayList<String>
 
 }
