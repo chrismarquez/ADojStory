@@ -1,23 +1,20 @@
 
 import Infrastructure.Inject
 import Interfaces.IOrchestrator
+import com.gui.view.OrchestatorView
+import tornadofx.App
+import tornadofx.launch
 import java.io.File
 
+class MyApp: App(OrchestatorView::class){}
 
-fun main() {
-
-    val orchestrator: IOrchestrator by Inject.get()
-
-
+fun main(args: Array<String>) {
+    launch<MyApp>(args)
+    /*val orchestrator: IOrchestrator by Inject.get()
     val fileToRead = File("ExampleDog.dog")
-
     val dataParsed: ArrayList<String> = orchestrator.parse(fileToRead)
-    println("--- Example data parsed ---")
-    var cont = 1
     for (js in dataParsed) {
-        println("------ JS $cont ------")
         println(js)
-        cont++
-    }
+    }*/
 
 }
