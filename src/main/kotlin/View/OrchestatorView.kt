@@ -49,6 +49,9 @@ class OrchestatorView : View("Paragraph Parser") {
                     paragraphs.add(i)
                 }
             }
+            val file = File("./${event.dragboard.files[0].nameWithoutExtension}.js")
+            val text = paragraphs.reduce { prev, curr -> prev + "\n" + curr  }
+            file.writeText(text)
             event.consume()
         }
     }
