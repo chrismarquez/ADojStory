@@ -1,43 +1,72 @@
 package Services
 
+import Infrastructure.Inject
 import Interfaces.ICodeGenerator
 import Interfaces.IParagraphParser
+import Models.*
 import java.lang.IllegalStateException
 
-class ParagraphParser(
-    private val codeGen: ICodeGenerator
-): IParagraphParser {
+class ParagraphParser : IParagraphParser {
+
+    private val codeGen: ICodeGenerator by Inject.get()
 
     private var className = ""
     private var pendingMethods = arrayListOf<String>()
 
-    private val value = "(\"\\w+\"|[0-9]+(.[0-9]+)?)"
+    private val value = "(\"(\\w( )*)+\"|[0-9]+(.[0-9]+)?)+"
     private val comma = "(, )*"
     private val fields = mutableListOf<String>()
 
     override fun parseParagraph(paragraph: String): String {
-        val sentences = paragraph.split("\\.")
+        val sentences = paragraph.split(".")
         for (sentence in sentences) matchPattern(sentence.trim())
-        return codeGen.buildObject(className)
+        val uglyGen = codeGen.buildObject(className)
+        fields.clear()
+        return Beautifier.beautify(uglyGen)
     }
 
-    private fun matchPattern(sentence: String) = when {
-        "There is a \\w+".toRegex().containsMatchIn(sentence) -> createObject(sentence)
-        "It has \\w+ of $value".toRegex().matches(sentence) -> addField(sentence)
-        "its \\w+ be $value".toRegex().matches(sentence) -> modifyField(sentence)
-        "It can (\\w+$comma)+".toRegex().containsMatchIn(sentence) -> declareMethods(sentence)
-        "To (\\w+)(,+) (.(?!,\$))+".toRegex().containsMatchIn(sentence) -> defineMethod(sentence)
-        "let \\w+ be $value".toRegex().matches(sentence) -> declareLocalVariable(sentence)
+    private fun matchPattern(sentence: String): Any = when {
+        sentence.isEmpty() -> ""
+        "its (\\w+) number ([0-9]+) be $value".toRegex().matches(sentence) -> assignIntoGlobalArray(sentence)
+        "(\\w+) number ([0-9]+) be $value".toRegex().matches(sentence) -> assignIntoLocalArray(sentence)
+        "[Tt]here is a \\w+".toRegex().containsMatchIn(sentence) -> createObject(sentence)
+        "[Ii]t has many (\\w+)".toRegex().containsMatchIn(sentence) -> declareGlobalArray(sentence)
+        "[Ii]ts (\\w+) are ($value$comma)+".toRegex().matches(sentence) -> assignGlobalArray(sentence)
+        "(\\w+) are ($value$comma)+".toRegex().matches(sentence) -> assignGlobalArray(sentence)
+        "[Ii]t has \\w+ of $value".toRegex().matches(sentence) -> addField(sentence)
+        "[Ii]ts \\w+ be $value".toRegex().matches(sentence) -> modifyField(sentence)
+        "[Ii]t can (\\w+$comma)+".toRegex().containsMatchIn(sentence) -> declareMethods(sentence)
+        "[Tt]o (\\w+): (.(?!,\$))+".toRegex().containsMatchIn(sentence) -> defineMethod(sentence)
+        "[Ll]et \\w+ be $value".toRegex().matches(sentence) -> declareLocalVariable(sentence)
         "\\w+ be $value".toRegex().matches(sentence) -> modifyLocalVariable(sentence)
-        "it uses \\w+( with ($value+$comma)+)?".toRegex().matches(sentence) -> callMethod(sentence)
-        else -> throw IllegalArgumentException("No match found")
+        "[Ii]t uses \\w+( with ($value+$comma)+)?".toRegex().matches(sentence) -> callMethod(sentence)
+        "[Ii]t prints ((\")?\\w+(\")?)".toRegex().matches(sentence) -> printExpression(sentence)
+        "(increase|decrease) its (\\w+) by ([0-9]+)".toRegex().matches(sentence) -> mutateGlobal(sentence)
+        "(increase|decrease) (\\w+) by ([0-9]+)".toRegex().matches(sentence) -> mutateLocal(sentence)
+        else -> throw IllegalArgumentException("No match found: $sentence")
+    }
+
+    private fun declareGlobalArray(sentence: String) {
+        val splitted = sentence.split(" ")
+        val name = splitted[3]
+        codeGen.genField(name, "[]")
     }
 
     private fun createObject(sentence: String) {
         val splitted = sentence.split(" ")
         var className = ""
-        for (i in 3..splitted.size) className += splitted[i]
+        for (i in 3 until splitted.size) className += splitted[i]
         this.className = className
+    }
+
+    private fun printExpression(sentence: String) {
+        val splitted = sentence.split(" ", ", ")
+        val printable = splitted[2]
+        codeGen.genStatement(
+            Expression(
+            type = Type.PRINT,
+            data = Definition(printable)
+        ))
     }
 
     private fun declareMethods(sentence: String): List<String> {
@@ -66,32 +95,40 @@ class ParagraphParser(
         if (fields.find { it == key } == null) fields.add(key)
 
         // Handler should be in the codeGen?
-        // codeGen.genField(key, value)
+        codeGen.genStatement(
+            Expression(
+            type = Type.ASSIGN_GLOBAL,
+            data = Assignment(key, value)
+        ))
         return "$key,$value"
     }
 
     private fun defineMethod(sentence: String): List<String> {
-        val splitted = sentence.split(", ", ",")
-        val methodName = splitted[0].split(" ")[0]
+        val splitted = sentence.split(": ", ":")
+        val methodName = splitted[0].split(" ")[1]
         val statements: List<String> = splitted[1].split("; ", ";")
         if (this.pendingMethods.find { it == methodName } != null) this.pendingMethods.remove(methodName)
 
         // TODO: Add Statements to Match Pattern function to run this loop
-        // TODO: Send correct call to Code Gen
-        // codeGen.genMethod()
         for (statement in statements) matchPattern(statement)
+
+        codeGen.genMethod(methodName, listOf())
         // Returning statements for unit testing
         return statements
     }
 
     private fun declareLocalVariable(sentence: String): String {
         val splitted = sentence.split(" ")
-        if (splitted.size != 4) throw IllegalArgumentException("Declare local variable malformed: $sentence")
         val key = splitted[1]
-        val value = splitted[3]
+        var value = ""
+        for (i in 3 until splitted.size) value += splitted[i] + if (i != splitted.size - 1) " " else ""
 
-        // TODO: Send correct call to Code Gen
-        // codeGen.genStatement()
+        codeGen.genStatement(
+            Expression(
+            type = Type.CREATE_VAR,
+            data = Assignment(key, value)
+        ))
+
         // Returning local variable key-value pairs for unit testing
         return "$key,$value"
     }
@@ -102,8 +139,10 @@ class ParagraphParser(
         val key = splitted[0]
         val value = splitted[2]
 
-        // TODO: Send correct call to Code Gen
-        // codeGen.genStatement()
+        codeGen.genStatement(Expression(
+            type = Type.ASSIGN_LOCAL,
+            data = Assignment(key, value)
+        ))
         // Returning local variable key-value pairs for unit testing
         return "$key,$value"
     }
@@ -113,14 +152,87 @@ class ParagraphParser(
         val method = splitted[2]
         var args = mutableListOf<String>()
 
-        // println(splitted.size)
         if (splitted.size != 3) {
-            for (i in 4..(splitted.size - 1)) args.add(splitted[i])
+            for (i in 4 until splitted.size) args.add(splitted[i])
         }
 
-        // TODO: Send correct call to Code Gen
-        // codeGen.genStatement()
+        codeGen.genStatement(
+            Expression(
+            type =  if (args.size == 0) Type.USE_METHOD else Type.USE_METHOD_PARAMS,
+            data = MethodCall(method, args)
+        ))
         // Returning local variable key-value pairs for unit testing
         return "$method($args)"
+    }
+
+    private fun assignIntoGlobalArray(sentence: String) {
+        val splitted = sentence.split(" ", ", ", ",")
+        val name = splitted[1]
+        val index = splitted[3].toInt() - 1
+        val value = splitted[5]
+
+        codeGen.genStatement(Expression(
+            type = Type.ASSIGN_GLOBAL_ARR_NUM,
+            data = ArrayAssignment(name, index, value)
+        ))
+    }
+
+    private fun assignIntoLocalArray(sentence: String) {
+        val splitted = sentence.split(" ", ", ", ",")
+        val name = splitted[0]
+        val index = splitted[2].toInt() - 1
+        val value = splitted[4]
+
+        codeGen.genStatement(Expression(
+            type = Type.ASSIGN_ARR_NUM,
+            data = ArrayAssignment(name, index, value)
+        ))
+    }
+
+    private fun assignLocalArray(sentence: String) {
+        val splitted = sentence.split(" ", ", ", ",")
+        val name = splitted[0]
+        val list = mutableListOf<String>()
+        for (i in 2 until splitted.size) list.add(splitted[i])
+
+        codeGen.genStatement(Expression(
+            type = Type.ASSIGN_ARR,
+            data = MethodCall(name, list)
+        ))
+    }
+
+    private fun assignGlobalArray(sentence: String) {
+        val splitted = sentence.split(" ", ", ", ",")
+        val name = splitted[1]
+        val list = mutableListOf<String>()
+        for (i in 3 until splitted.size) list.add(splitted[i])
+
+        codeGen.genStatement(Expression(
+            type = Type.ASSIGN_GLOBAL_ARR,
+            data = MethodCall(name, list)
+        ))
+    }
+
+    private fun mutateLocal(sentence: String) {
+        val splitted = sentence.split(" ")
+        val modifier = splitted[0]
+        val value = splitted[3].toInt()
+        val name = splitted[1]
+        codeGen.genStatement(Expression(
+            type = if (modifier == "increase") Type.INCREASE_VAR_BY_VAL else Type.INCREASE_VAR_BY_VAL,
+            data = Mutation(name, value)
+        ))
+    }
+
+    private fun mutateGlobal(sentence: String) {
+        val splitted = sentence.split(" ")
+        val modifier = splitted[0]
+        val name = splitted[2]
+        val value = splitted[4].toInt()
+        codeGen.genStatement(
+            Expression(
+            type = if (modifier == "increase") Type.INCREASE_GLOBAL_BY_VAL else Type.DECREASE_GLOBAL_BY_VAL,
+            data = Mutation(name, value)
+        ))
     }
 }
