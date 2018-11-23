@@ -38,7 +38,7 @@ class CodeGenerator : ICodeGenerator {
             }
             Type.USE_METHOD -> {
                 if (expression.data !is MethodCall) throw Exception("Not correct data type")
-                this.statements.add("${expression.data.name}();")
+                this.statements.add("this.${expression.data.name}();")
             }
             Type.USE_METHOD_PARAMS -> {
                 if (expression.data !is MethodCall) throw Exception("Not correct data type")
@@ -47,7 +47,7 @@ class CodeGenerator : ICodeGenerator {
                     val arg = expression.data.args[i]
                     stringArgs += arg + if (i != expression.data.args.size - 1) ", " else ""
                 }
-                this.statements.add("${expression.data.name}($stringArgs);")
+                this.statements.add("this.${expression.data.name}($stringArgs);")
             }
             Type.ASSIGN_GLOBAL_ARR -> {
                 if (expression.data !is MethodCall) throw Exception("Not correct data type")
@@ -107,7 +107,7 @@ class CodeGenerator : ICodeGenerator {
             statements += " $statement "
         }
 
-        this.methods.add("$name : ($stringArgs) => { $statements }")
+        this.methods.add("$name : function($stringArgs) { $statements }")
         this.variables.add(name)
         this.statements.clear()
         return this

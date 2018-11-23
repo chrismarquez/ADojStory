@@ -6,5 +6,5 @@ There is a Programmer. It has name of "Miguel". It has pet of "Mike". It has sta
 It has caffeineLevel of 0. It can code, sleep, goCrazy, drinkCoffee, eatPizza.
 To code: decrease its stamina by 10; it uses drinkCoffee; its tools are "Ide", "Laptop"; it prints "Coding".
 To sleep: its stamina be 100; let dream be "John Skeet"; it prints dream.
-To drinkCoffee: increase its caffeineLevel by 30; it uses goCrazy with "Stop".
+To drinkCoffee: increase its caffeineLevel by 30.
 To eatPizza: increase its stamina by 20; decrease its caffeineLevel by 10; it prints "Yeah".

@@ -6,6 +6,7 @@ import javafx.stage.FileChooser
 import tornadofx.*
 import javafx.scene.control.SelectionMode
 import javafx.scene.input.TransferMode
+import java.io.File
 
 class OrchestatorView : View("Paragraph Parser") {
     private val paragraphs = arrayListOf<String>().observable()
@@ -23,13 +24,20 @@ class OrchestatorView : View("Paragraph Parser") {
         bottom {
             button("Target File") {
                 action {
-                    val files = chooseFile("Select dog file",
-                        arrayOf(FileChooser.ExtensionFilter("Dog files (*.dog)", "*.dog")))
+
+                    val files = chooseFile(
+                        "Select dog file",
+                        arrayOf(FileChooser.ExtensionFilter("Dog files (*.dog)", "*.dog"))
+                    )
+                    val file = File("./${files[0].nameWithoutExtension}.js")
                     if (files.isNotEmpty()) {
-                        for(i in orchestrator.parse(files.get(0))) {
+
+                        for (i in orchestrator.parse(files.get(0))) {
                             paragraphs.add(i)
                         }
                     }
+                    val text = paragraphs.reduce { prev, curr -> prev + "\n" + curr  }
+                    file.writeText(text)
                 }
             }
         }
