@@ -20,13 +20,17 @@ class CodeGenerator : ICodeGenerator {
 
     override fun genStatement(expression: Expression, varName: String?): ICodeGenerator {
         when (expression.type) {
+            Type.PRINT -> {
+                if (expression.data !is Definition) throw Exception("Not correct data type")
+                this.statements.add("console.log(${expression.data.name});")
+            }
             Type.ASSIGN_LOCAL -> {
                 if (expression.data !is Assignment) throw Exception("Not correct data type")
                 this.statements.add("${expression.data.name} = ${expression.data.value};")
             }
             Type.CREATE_VAR -> {
                 if (expression.data !is Assignment) throw Exception("Not correct data type")
-                this.statements.add("let ${expression.data.name};")
+                this.statements.add("let ${expression.data.name} = ${expression.data.value};")
             }
             Type.ASSIGN_GLOBAL -> {
                 if (expression.data !is Assignment) throw Exception("Not correct data type")
@@ -38,15 +42,34 @@ class CodeGenerator : ICodeGenerator {
             }
             Type.USE_METHOD_PARAMS -> {
                 if (expression.data !is MethodCall) throw Exception("Not correct data type")
-                var the_args = ""
-                for (arg in expression.data.args) {
-                    the_args += "$arg, "
+                var stringArgs = ""
+                for (i in 0 until expression.data.args.size) {
+                    val arg = expression.data.args[i]
+                    stringArgs += arg + if (i != expression.data.args.size - 1) ", " else ""
                 }
-                this.statements.add("${expression.data.name}($the_args);")
+                this.statements.add("${expression.data.name}($stringArgs);")
+            }
+            Type.ASSIGN_GLOBAL_ARR -> {
+                if (expression.data !is MethodCall) throw Exception("Not correct data type")
+                var stringArgs = ""
+                for (i in 0 until expression.data.args.size) {
+                    val arg = expression.data.args[i]
+                    stringArgs += arg + if (i != expression.data.args.size - 1) ", " else ""
+                }
+                this.statements.add("this.${expression.data.name} = [$stringArgs];")
             }
             Type.ASSIGN_ARR -> {
+                if (expression.data !is MethodCall) throw Exception("Not correct data type")
+                var stringArgs = ""
+                for (i in 0 until expression.data.args.size) {
+                    val arg = expression.data.args[i]
+                    stringArgs += arg + if (i != expression.data.args.size - 1) ", " else ""
+                }
+                this.statements.add("${expression.data.name} = [$stringArgs];")
+            }
+            Type.ASSIGN_GLOBAL_ARR_NUM -> {
                 if (expression.data !is ArrayAssignment) throw Exception("Not correct data type")
-                this.statements.add("${expression.data.name} = ${expression.data.value};")
+                this.statements.add("this.${expression.data.name}[${expression.data.index}] = ${expression.data.value};")
             }
             Type.ASSIGN_ARR_NUM -> {
                 if (expression.data !is ArrayAssignment) throw Exception("Not correct data type")
@@ -60,14 +83,23 @@ class CodeGenerator : ICodeGenerator {
                 if (expression.data !is Mutation) throw Exception("Not correct data type")
                 this.statements.add("${expression.data.name} -= ${expression.data.value};")
             }
+            Type.INCREASE_GLOBAL_BY_VAL -> {
+                if (expression.data !is Mutation) throw Exception("Not correct data type")
+                this.statements.add("this.${expression.data.name} += ${expression.data.value};")
+            }
+            Type.DECREASE_GLOBAL_BY_VAL -> {
+                if (expression.data !is Mutation) throw Exception("Not correct data type")
+                this.statements.add("this.${expression.data.name} -= ${expression.data.value};")
+            }
         }
         return this
     }
 
     override fun genMethod(name: String, args: List<String>): ICodeGenerator {
         var stringArgs = ""
-        for (arg in args) {
-            stringArgs += "$arg, "
+        for (i in 0 until args.size) {
+            val arg = args[i]
+            stringArgs += arg + if (i != args.size - 1) ", " else ""
         }
 
         var statements = ""
@@ -75,7 +107,7 @@ class CodeGenerator : ICodeGenerator {
             statements += " $statement "
         }
 
-        this.methods.add("$name : ($stringArgs) => { $statements },")
+        this.methods.add("$name : ($stringArgs) => { $statements }")
         this.variables.add(name)
         this.statements.clear()
         return this
@@ -88,14 +120,15 @@ class CodeGenerator : ICodeGenerator {
         for (field in this.fields) {
             stringFields += " $field "
         }
-        //this.fields.clear()
+        this.fields.clear()
 
         // Stringify Methods
         var stringMethods = ""
-        for (method in this.methods) {
-            stringMethods += " $method "
+        for (i in 0 until this.methods.size) {
+            val method = methods[i]
+            stringMethods += " $method" + if (i != methods.size - 1) ", " else ""
         }
-        //this.methods.clear()
+        this.methods.clear()
 
         val objectString = "let $name = { $stringFields $stringMethods};"
 
