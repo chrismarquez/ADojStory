@@ -44,16 +44,4 @@ class BaseOrchestrator : IOrchestrator {
         return result
     }
 
-    private fun parseFile(file: File): String {
-        var result: String = ""
-        FileReader(file).use {
-            var character = it.read()
-            while(character != -1) {
-                result += character.toChar()
-                character = it.read()
-            }
-        }
-        return result
-    }
-
 }
