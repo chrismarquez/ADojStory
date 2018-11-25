@@ -1,6 +1,5 @@
-package Services
+package com.dogstories.Services
 
-import com.dogstories.Services.ParagraphParser
 import org.junit.Assert
 import org.junit.jupiter.api.Test
 import kotlin.reflect.jvm.isAccessible

@@ -1,7 +1,4 @@
 .gradle
-gradle
-out
-ADojStory.iml
 /build/
 
 # Ignore Gradle GUI config
@@ -15,15 +12,3 @@ gradle-app.setting
 
 # # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
 # gradle/wrapper/gradle-wrapper.properties
-
-#
-.xml
-.classpath
-.project
-.settings
-.idea
-
-#
-/out/
-/gradle/
-/bin/
