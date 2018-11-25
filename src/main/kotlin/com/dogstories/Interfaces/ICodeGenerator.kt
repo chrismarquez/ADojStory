@@ -1,6 +1,6 @@
-package Interfaces
+package com.dogstories.Interfaces
 
-import Models.Expression
+import com.dogstories.Models.Expression
 
 interface ICodeGenerator {
     fun genField(key: String, value: String): ICodeGenerator

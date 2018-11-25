@@ -1,9 +1,9 @@
-package Services
+package com.dogstories.Services
 
-import Infrastructure.Inject
-import Interfaces.ICodeGenerator
-import Interfaces.IParagraphParser
-import Models.*
+import com.dogstories.Infrastructure.Inject
+import com.dogstories.Interfaces.ICodeGenerator
+import com.dogstories.Interfaces.IParagraphParser
+import com.dogstories.Models.*
 import java.lang.IllegalStateException
 
 class ParagraphParser : IParagraphParser {
@@ -64,9 +64,10 @@ class ParagraphParser : IParagraphParser {
         val printable = splitted[2]
         codeGen.genStatement(
             Expression(
-            type = Type.PRINT,
-            data = Definition(printable)
-        ))
+                type = Type.PRINT,
+                data = Definition(printable)
+            )
+        )
     }
 
     private fun declareMethods(sentence: String): List<String> {
@@ -97,9 +98,10 @@ class ParagraphParser : IParagraphParser {
         // Handler should be in the codeGen?
         codeGen.genStatement(
             Expression(
-            type = Type.ASSIGN_GLOBAL,
-            data = Assignment(key, value)
-        ))
+                type = Type.ASSIGN_GLOBAL,
+                data = Assignment(key, value)
+            )
+        )
         return "$key,$value"
     }
 
@@ -125,9 +127,10 @@ class ParagraphParser : IParagraphParser {
 
         codeGen.genStatement(
             Expression(
-            type = Type.CREATE_VAR,
-            data = Assignment(key, value)
-        ))
+                type = Type.CREATE_VAR,
+                data = Assignment(key, value)
+            )
+        )
 
         // Returning local variable key-value pairs for unit testing
         return "$key,$value"
@@ -139,10 +142,12 @@ class ParagraphParser : IParagraphParser {
         val key = splitted[0]
         val value = splitted[2]
 
-        codeGen.genStatement(Expression(
-            type = Type.ASSIGN_LOCAL,
-            data = Assignment(key, value)
-        ))
+        codeGen.genStatement(
+            Expression(
+                type = Type.ASSIGN_LOCAL,
+                data = Assignment(key, value)
+            )
+        )
         // Returning local variable key-value pairs for unit testing
         return "$key,$value"
     }
@@ -158,9 +163,10 @@ class ParagraphParser : IParagraphParser {
 
         codeGen.genStatement(
             Expression(
-            type =  if (args.size == 0) Type.USE_METHOD else Type.USE_METHOD_PARAMS,
-            data = MethodCall(method, args)
-        ))
+                type = if (args.size == 0) Type.USE_METHOD else Type.USE_METHOD_PARAMS,
+                data = MethodCall(method, args)
+            )
+        )
         // Returning local variable key-value pairs for unit testing
         return "$method($args)"
     }
@@ -171,10 +177,12 @@ class ParagraphParser : IParagraphParser {
         val index = splitted[3].toInt() - 1
         val value = splitted[5]
 
-        codeGen.genStatement(Expression(
-            type = Type.ASSIGN_GLOBAL_ARR_NUM,
-            data = ArrayAssignment(name, index, value)
-        ))
+        codeGen.genStatement(
+            Expression(
+                type = Type.ASSIGN_GLOBAL_ARR_NUM,
+                data = ArrayAssignment(name, index, value)
+            )
+        )
     }
 
     private fun assignIntoLocalArray(sentence: String) {
@@ -183,10 +191,12 @@ class ParagraphParser : IParagraphParser {
         val index = splitted[2].toInt() - 1
         val value = splitted[4]
 
-        codeGen.genStatement(Expression(
-            type = Type.ASSIGN_ARR_NUM,
-            data = ArrayAssignment(name, index, value)
-        ))
+        codeGen.genStatement(
+            Expression(
+                type = Type.ASSIGN_ARR_NUM,
+                data = ArrayAssignment(name, index, value)
+            )
+        )
     }
 
     private fun assignLocalArray(sentence: String) {
@@ -195,10 +205,12 @@ class ParagraphParser : IParagraphParser {
         val list = mutableListOf<String>()
         for (i in 2 until splitted.size) list.add(splitted[i])
 
-        codeGen.genStatement(Expression(
-            type = Type.ASSIGN_ARR,
-            data = MethodCall(name, list)
-        ))
+        codeGen.genStatement(
+            Expression(
+                type = Type.ASSIGN_ARR,
+                data = MethodCall(name, list)
+            )
+        )
     }
 
     private fun assignGlobalArray(sentence: String) {
@@ -207,10 +219,12 @@ class ParagraphParser : IParagraphParser {
         val list = mutableListOf<String>()
         for (i in 3 until splitted.size) list.add(splitted[i])
 
-        codeGen.genStatement(Expression(
-            type = Type.ASSIGN_GLOBAL_ARR,
-            data = MethodCall(name, list)
-        ))
+        codeGen.genStatement(
+            Expression(
+                type = Type.ASSIGN_GLOBAL_ARR,
+                data = MethodCall(name, list)
+            )
+        )
     }
 
     private fun mutateLocal(sentence: String) {
@@ -218,10 +232,12 @@ class ParagraphParser : IParagraphParser {
         val modifier = splitted[0]
         val value = splitted[3].toInt()
         val name = splitted[1]
-        codeGen.genStatement(Expression(
-            type = if (modifier == "increase") Type.INCREASE_VAR_BY_VAL else Type.INCREASE_VAR_BY_VAL,
-            data = Mutation(name, value)
-        ))
+        codeGen.genStatement(
+            Expression(
+                type = if (modifier == "increase") Type.INCREASE_VAR_BY_VAL else Type.INCREASE_VAR_BY_VAL,
+                data = Mutation(name, value)
+            )
+        )
     }
 
     private fun mutateGlobal(sentence: String) {
@@ -231,8 +247,9 @@ class ParagraphParser : IParagraphParser {
         val value = splitted[4].toInt()
         codeGen.genStatement(
             Expression(
-            type = if (modifier == "increase") Type.INCREASE_GLOBAL_BY_VAL else Type.DECREASE_GLOBAL_BY_VAL,
-            data = Mutation(name, value)
-        ))
+                type = if (modifier == "increase") Type.INCREASE_GLOBAL_BY_VAL else Type.DECREASE_GLOBAL_BY_VAL,
+                data = Mutation(name, value)
+            )
+        )
     }
 }

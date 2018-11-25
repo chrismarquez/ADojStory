@@ -1,4 +1,4 @@
-package Models
+package com.dogstories.Models
 
 enum class Type {
     PRINT,

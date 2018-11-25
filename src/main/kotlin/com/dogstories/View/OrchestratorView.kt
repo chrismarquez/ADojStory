@@ -1,14 +1,14 @@
-package View
+package com.dogstories.View
 
-import Infrastructure.Inject
-import Interfaces.IOrchestrator
+import com.dogstories.Infrastructure.Inject
+import com.dogstories.Interfaces.IOrchestrator
 import javafx.stage.FileChooser
 import tornadofx.*
 import javafx.scene.control.SelectionMode
 import javafx.scene.input.TransferMode
 import java.io.File
 
-class OrchestatorView : View("Paragraph Parser") {
+class OrchestratorView : View("Dog Compiler") {
     private val paragraphs = arrayListOf<String>().observable()
     val orchestrator: IOrchestrator by Inject.get()
 
@@ -24,7 +24,7 @@ class OrchestatorView : View("Paragraph Parser") {
         bottom {
             button("Target File") {
                 action {
-
+                    println(this@OrchestratorView.javaClass.canonicalName)
                     val files = chooseFile(
                         "Select dog file",
                         arrayOf(FileChooser.ExtensionFilter("Dog files (*.dog)", "*.dog"))

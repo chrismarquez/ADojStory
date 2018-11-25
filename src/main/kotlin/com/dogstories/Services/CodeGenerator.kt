@@ -1,7 +1,7 @@
-package Services
+package com.dogstories.Services
 
-import Interfaces.ICodeGenerator
-import Models.*
+import com.dogstories.Interfaces.ICodeGenerator
+import com.dogstories.Models.*
 
 class CodeGenerator : ICodeGenerator {
 
