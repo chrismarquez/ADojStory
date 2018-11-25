@@ -1,9 +1,8 @@
-package Services
-import Infrastructure.Inject
-import Interfaces.IOrchestrator
-import Interfaces.IParagraphParser
+package com.dogstories.Services
+import com.dogstories.Infrastructure.Inject
+import com.dogstories.Interfaces.IOrchestrator
+import com.dogstories.Interfaces.IParagraphParser
 import java.io.File
-import java.io.FileReader
 
 
 class BaseOrchestrator : IOrchestrator {
